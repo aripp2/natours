@@ -2,6 +2,7 @@
 //
 const fs = require('fs');
 const express = require('express');
+const morgan = require('morgan');
 
 const app = express();
 
@@ -11,6 +12,20 @@ const app = express();
 // a step added to the request
 
 app.use(express.json());
+
+// 3rd Party Middleware from npm morgan
+// Provides info about the req
+app.use(morgan('dev'));
+
+app.use((req, res, next) => {
+  console.log('Hello from the middleware 👋');
+  next();
+});
+
+app.use((req, res, next) => {
+  req.requestTime = new Date().toISOString();
+  next();
+});
 
 // app.get('/', (req, res) => {
 //   res
@@ -31,8 +46,10 @@ const tours = JSON.parse(
 
 // Get All Tours
 const getAllTours = (req, res) => {
+  console.log(req.requestTime);
   res.status(200).json({
     status: 'success',
+    requestedAt: req.requestTime,
     // number of results if sending an array with multiple objects
     results: tours.length,
     data: {
@@ -138,6 +155,7 @@ const deleteTour = (req, res) => {
 // app.patch(`/api/v1/tours/:id`, updateTour);
 // app.delete('/api/v1/tours/:id', deleteTour);
 
+// Routes
 app
   .route('/api/v1/tours')
   .get(getAllTours)
@@ -149,6 +167,7 @@ app
   .patch(updateTour)
   .delete(deleteTour);
 
+// Start the server
 const port = 3000;
 app.listen(port, () => {
   console.log(`App running on port ${port}...`);
