@@ -5,6 +5,37 @@ const tours = JSON.parse(
   fs.readFileSync(`${__dirname}/../dev-data/data/tours-simple.json`)
 );
 
+exports.checkID = (req, res, next, val) => {
+  console.log(`Tour id is: ${val}`);
+
+  const id = req.params.id * 1;
+  const tour = tours.find(el => el.id === id);
+
+  if (!tour) {
+    return res.status(404).json({
+      status: 'fail',
+      message: 'Invalid ID'
+    });
+  }
+  // if (req.params.id * 1 > tours.length) {
+  //   return res.status(404).json({
+  //     status: 'fail',
+  //     message: 'Invalid ID'
+  //   });
+  // }
+  next();
+};
+
+exports.checkBody = (req, res, next) => {
+  if (!req.body.name || !req.body.price) {
+    return res.status(400).json({
+      status: 'fail',
+      message: 'Missing name or price'
+    });
+  }
+  next();
+};
+
 exports.getAllTours = (req, res) => {
   console.log(req.requestTime);
   res.status(200).json({
@@ -27,14 +58,8 @@ exports.getTour = (req, res) => {
   // Automatically convert the string of the request id to a number
   const id = req.params.id * 1;
   const tour = tours.find(el => el.id === id);
-  // Error handling for not found
-  if (!tour) {
-    return res.status(404).json({
-      status: 'fail',
-      message: 'Invalid ID'
-    });
-  }
-  resp.status(200).json({
+
+  res.status(200).json({
     status: 'success',
     data: {
       tour
@@ -67,12 +92,7 @@ exports.createTour = (req, res) => {
 exports.updateTour = (req, res) => {
   const id = req.params.id * 1;
   const tour = tours.find(el => el.id === id);
-  if (!tour) {
-    return res.status(404).json({
-      status: 'fail',
-      message: 'Invalid ID'
-    });
-  }
+
   res.status(200).json({
     status: 'success',
     data: {
@@ -83,12 +103,6 @@ exports.updateTour = (req, res) => {
 
 // Delete
 exports.deleteTour = (req, res) => {
-  if (req.params.id * 1 > tours.length) {
-    return res.status(404).json({
-      status: 'fail',
-      message: 'Invalid ID'
-    });
-  }
   // 204 === successful request w/o content
   res.status(204).json({
     status: 'success',
